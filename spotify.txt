@@ -1,0 +1,6 @@
+Client ID d6872a0de61a4ea08746052eadeb7c7b
+Client Secret 0cdaa4f4b2534a8aa4ad4c8f0770b91a
+base64c encoded clientid:clientSecret:  ZDY4NzJhMGRlNjFhNGVhMDg3NDYwNTJlYWRlYjdjN2I6MGNkYWE0ZjRiMjUzNGE4YWE0YWQ0YzhmMDc3MGI5MWE=
+
+
+curl -X "GET" "https://api.spotify.com/v1/recommendations?market=US&seed_genres=acoustic" -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer BQAF15ZmnSPAjhUXk2c4QFtKry0IU6cA6h_t-pTGTlcDWLj5BugHjwWEAZTw4Li4fQFrR8G0HA8ZNvv0AVV3-AvmE6xJpolYcKmwgXJ9oiTRnDhuCHePYlvqRAdUXUDVrfYYkGD-"

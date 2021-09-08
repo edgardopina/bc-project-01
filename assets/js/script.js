@@ -1,12 +1,45 @@
-const LCL_STG_KEY = "spotify-prev-list";
+const LCL_STG_KEY = "spotify-prev-lists";
 const TOKEN_LIFE = 50 * 60 * 1000;
+const MAX_PLAYLISTS = 3;
+var histCtr = 0;
+var intervalCtrl = {};
+
 var genre;
 var genreList = [];
-var intervalCtrl = {};
-var previousList = [];
+var prevPlaylistName = "";
+var prevPlaylist = [];
+var histPlaylists = [];
 var token;
 
 
+var createTrackEl = function (ulPlayListEl, track) {
+   var anchorElPreview = document.createElement("a");
+   anchorElPreview.className = "playlist-item-pv";
+   anchorElPreview.href = track.preview;
+   anchorElPreview.textContent = "Preview - ";
+   anchorElPreview.target = "_blank";
+   anchorElPreview.rel = "noreferrer noopener";
+
+
+   var anchorElFull = document.createElement("a");
+   anchorElFull.className = "playlist-item-full";
+   anchorElFull.href = track.trackUrl;
+   anchorElFull.textContent = track.name;
+   anchorElFull.target = "_blank";
+   anchorElFull.rel = "noreferrer noopener";
+
+   var spanEl = document.createElement("span");
+   spanEl.textContent = ", with " + track.artistName;
+
+
+   var liEl = document.createElement("li");
+   liEl.className = "playlist-item-li";
+   liEl.appendChild(anchorElPreview);
+   liEl.appendChild(anchorElFull);
+   liEl.appendChild(spanEl);
+
+   ulPlayListEl.appendChild(liEl);
+}
 
 function buildPlaylistDOM(playlistData) {
    const SPOTIFY_MARKER = 0;
@@ -20,59 +53,33 @@ function buildPlaylistDOM(playlistData) {
    ulPlayListEl.className = "playlist-group";
    ulPlayListEl.id = "playlist-group";
 
-   localStorage.setItem(LCL_STG_KEY, JSON.stringify(previousList));
-   previousList = [];
+   prevPlaylistName = genre;
+   prevPlaylist = [];
 
    var tempDataLength = playlistData.tracks.length;
    for (var i = 0; i < tempDataLength; ++i) {
-      var artistName = playlistData.tracks[i].artists[SPOTIFY_MARKER].name;
-      var trackUrl = playlistData.tracks[i].artists[SPOTIFY_MARKER].external_urls.spotify;
-      var trackPreview = playlistData.tracks[i].preview_url;
-      var trackName = playlistData.tracks[i].name;
-
-      var anchorElPreview = {};
-      if (trackPreview) {
-         anchorElPreview = document.createElement("a");
-         anchorElPreview.className = "playlist-item-pv";
-         anchorElPreview.href = trackPreview;
-         anchorElPreview.textContent = "Preview - ";
-         anchorElPreview.target = "_blank"
-         anchorElPreview.rel = "noreferrer noopener"
-      } else {
-         anchorElPreview = document.createElement("span");
-         anchorElPreview.textContent = "Preview not available - ";
+      var track = {
+         preview: playlistData.tracks[i].preview_url,
+         name: playlistData.tracks[i].name,
+         url: playlistData.tracks[i].artists[SPOTIFY_MARKER].external_urls.spotify,
+         artistName: playlistData.tracks[i].artists[SPOTIFY_MARKER].name,
       }
-
-
-      var anchorElFull = document.createElement("a");
-      anchorElFull.className = "playlist-item-full";
-      anchorElFull.href = trackUrl;
-      anchorElFull.textContent = trackName;
-      anchorElFull.target = "_blank"
-      anchorElFull.rel = "noreferrer noopener"
-
-      var spanEl = document.createElement("span");
-      spanEl.textContent = ", with " + artistName;
-
-
-      var liEl = document.createElement("li");
-      liEl.className = "playlist-item-li";
-      liEl.appendChild(anchorElPreview);
-      liEl.appendChild(anchorElFull);
-      liEl.appendChild(spanEl);
-
-      ulPlayListEl.appendChild(liEl);
-
-      var previousListEl = {
-         trackPreview: trackPreview,
-         trackName: trackName,
-         trackUrl: trackUrl,
-         artistName: artistName,
+      if (track.preview) {
+         createTrackEl(ulPlayListEl, track);
+         prevPlaylist.push(track);
       }
-      previousList.push(previousListEl);
    }
-
    document.getElementById("head-id").after(ulPlayListEl);
+   var prevPlaylistObj = {
+      prevPlaylistName: prevPlaylistName,
+      prevPlaylist: prevPlaylist,
+   };
+
+   histPlaylists.push(prevPlaylistObj);
+   if (histCtr++ >= MAX_PLAYLISTS) {
+      histPlaylists.shift();
+   }
+   localStorage.setItem(LCL_STG_KEY, JSON.stringify(histPlaylists));
 
 };
 
@@ -127,12 +134,9 @@ async function getGenreListData() {
    });
    const genreData = await response.json();
    genreList = genreData.genres;
-
    buildGenreDOM();
-
    document.getElementById("genre-list-group").addEventListener("change", function () {
       genre = document.getElementById("genre-list-group").value;
-
       getPlayListData();
    });
 
@@ -149,7 +153,6 @@ async function getNewToken() {
    });
    const tokenData = await response.json();
    token = tokenData.access_token;
-
    getGenreListData();
 };
 
@@ -160,5 +163,3 @@ function startMusic() {
 
 
 startMusic();
-
-

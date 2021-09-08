@@ -1,7 +1,6 @@
 const LCL_STG_KEY = "spotify-prev-lists";
 const TOKEN_LIFE = 50 * 60 * 1000;
 const MAX_PLAYLISTS = 3;
-var histCtr = 0;
 var intervalCtrl = {};
 
 var genre;
@@ -70,13 +69,18 @@ function buildPlaylistDOM(playlistData) {
       }
    }
    document.getElementById("head-id").after(ulPlayListEl);
+
    var prevPlaylistObj = {
       prevPlaylistName: prevPlaylistName,
       prevPlaylist: prevPlaylist,
    };
+   
+   if (localStorage.getItem(LCL_STG_KEY)) {
+      histPlaylists = JSON.parse(localStorage.getItem(LCL_STG_KEY));
+   }
 
    histPlaylists.push(prevPlaylistObj);
-   if (histCtr++ >= MAX_PLAYLISTS) {
+   if (histPlaylists.length > MAX_PLAYLISTS) {
       histPlaylists.shift();
    }
    localStorage.setItem(LCL_STG_KEY, JSON.stringify(histPlaylists));
